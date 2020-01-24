@@ -3,9 +3,8 @@ package com.kata.bank;
 import com.kata.bank.domain.Account;
 import com.kata.bank.domain.Transaction;
 import com.kata.bank.service.AccountService;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.hibernate.validator.internal.IgnoreForbiddenApisErrors;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,14 @@ public class BankApplicationTests {
     @Autowired
     private AccountService accountService;
 
+    @Rule
+    public ExpectedException expectedException= ExpectedException.none();;
+
+    @After
+    public void tearDown(){
+        account.setBalance(BigDecimal.ZERO);
+    }
+
     @Test
     public void testOrdinaryBehavior() {
         BigDecimal amount = BigDecimal.valueOf(175);
@@ -39,14 +46,12 @@ public class BankApplicationTests {
         Assert.assertTrue(account.getBalance().equals(BigDecimal.ZERO));
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
+    @Test
     public void testDepositBoundaryValue(){
         expectedException.expect(ConstraintViolationException.class);
         expectedException.expectMessage("Balance should not be greater than 20000€");
         BigDecimal amount = BigDecimal.valueOf(20000.55);
-        Transaction withdrawalTransaction = accountService.makeWithdrawal(amount);
+        accountService.makeDeposit(amount);
     }
 
     @Test
