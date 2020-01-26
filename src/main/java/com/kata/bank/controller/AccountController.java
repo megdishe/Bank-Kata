@@ -3,6 +3,8 @@ package com.kata.bank.controller;
 import com.kata.bank.domain.History;
 import com.kata.bank.domain.Transaction;
 import com.kata.bank.service.AccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,9 @@ import java.math.BigDecimal;
 @RestController
 @Validated
 public class AccountController {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AccountController.class);
+
     @Autowired
     private AccountService accountService;
 
@@ -27,6 +32,7 @@ public class AccountController {
                                                    @Positive(message = "Amount must be positive")
                                                    @DecimalMax(value = "1000.00", message = "Amount should not be greater than 1000€")
                                                            BigDecimal amount) {
+        LOG.debug("Deposit request for amount " + amount + "€");
         Transaction transaction = accountService.makeDeposit(amount);
         return new ResponseEntity(transaction, HttpStatus.OK);
     }
@@ -36,6 +42,7 @@ public class AccountController {
                                                       @Positive(message = "Amount must be positive")
                                                       @DecimalMax(value = "1000.00", message = "Amount should not be greater than 1000€")
                                                               BigDecimal amount) {
+        LOG.debug("Withdrawal request for amount " + amount + "€");
         Transaction transaction = accountService.makeWithdrawal(amount);
         return new ResponseEntity(transaction, HttpStatus.OK);
     }
