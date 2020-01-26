@@ -1,14 +1,18 @@
 package com.kata.bank.domain;
 
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Transaction {
-    private OperationType operationType;
-    private LocalDateTime date;
-    private BigDecimal amount;
-    private BigDecimal balance;
+    private final OperationType operationType;
+    private final LocalDateTime date;
+    private final BigDecimal amount;
+    @DecimalMin(value = "-350.00", message = "Balance should not be less than -350€")
+    @DecimalMax(value = "20000.00", message = "Balance should not be greater than 20000€")
+    private final BigDecimal balance;
 
     public Transaction(OperationType operationType, LocalDateTime date, BigDecimal amount, BigDecimal balance) {
         this.operationType = operationType;
@@ -21,33 +25,21 @@ public class Transaction {
         return operationType;
     }
 
-    public void setOperationType(OperationType operationType) {
-        this.operationType = operationType;
-    }
 
     public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
-        this.date = date;
-    }
 
     public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
 
     public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
 
     @Override
     public String toString() {

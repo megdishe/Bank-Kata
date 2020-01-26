@@ -17,13 +17,6 @@ public class BankApplication {
     }
 
     @Bean
-    public Account account() {
-        Account account = new Account();
-        account.setBalance(BigDecimal.ZERO);
-        return account;
-    }
-
-    @Bean
     public Validator validator() {
         return new LocalValidatorFactoryBean();
     }

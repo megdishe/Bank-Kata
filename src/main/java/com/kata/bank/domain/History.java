@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class History {
-    private final Set<Transaction> transactions= new TreeSet<>(Comparator.comparing(Transaction::getDate));
+    private final Set<Transaction> transactions = new TreeSet<>(Comparator.comparing(Transaction::getDate));
 
     public Set<Transaction> getTransactions() {
         return transactions;

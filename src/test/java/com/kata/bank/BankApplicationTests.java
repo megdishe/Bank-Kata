@@ -29,7 +29,7 @@ public class BankApplicationTests {
 
     @After
     public void tearDown(){
-        account.setBalance(BigDecimal.ZERO);
+        account.getBalance().set(BigDecimal.ZERO);
     }
 
     @Test
@@ -43,7 +43,7 @@ public class BankApplicationTests {
         Assert.assertEquals(depositTransaction, ((TreeSet) transactions).first());
         Assert.assertEquals(withdrawalTransaction, ((TreeSet) transactions).last());
         Assert.assertTrue(transactions.size() == 2);
-        Assert.assertTrue(account.getBalance().equals(BigDecimal.ZERO));
+        Assert.assertTrue(account.getBalance().get().equals(BigDecimal.ZERO));
     }
 
     @Test

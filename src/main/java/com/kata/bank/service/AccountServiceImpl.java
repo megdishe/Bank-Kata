@@ -30,11 +30,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Transaction makeDeposit(BigDecimal amount) {
-        BigDecimal balance = account.getBalance();
-        BigDecimal updatedBalance = balance.add(amount);
-        Transaction transaction = new Transaction(OperationType.DEPOSIT, LocalDateTime.now(), amount, updatedBalance);
-        account.setBalance(updatedBalance);
-        validateAccount();
+        account.getBalance().getAndAccumulate(amount, BigDecimal::add);
+        Transaction transaction = new Transaction(OperationType.DEPOSIT, LocalDateTime.now(), amount, account.getBalance().get());
+        validateTransaction(transaction);
         History history = account.getHistory();
         history.getTransactions().add(transaction);
         return transaction;
@@ -42,18 +40,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Transaction makeWithdrawal(BigDecimal amount) {
-        BigDecimal balance = account.getBalance();
-        BigDecimal updatedBalance = balance.subtract(amount);
-        Transaction transaction = new Transaction(OperationType.WITHDRAWAL, LocalDateTime.now(), amount, updatedBalance);
-        account.setBalance(updatedBalance);
-        validateAccount();
+        account.getBalance().getAndAccumulate(amount, BigDecimal::subtract);
+        Transaction transaction = new Transaction(OperationType.WITHDRAWAL, LocalDateTime.now(), amount, account.getBalance().get());
+        validateTransaction(transaction);
         History history = account.getHistory();
         history.getTransactions().add(transaction);
         return transaction;
     }
 
-    private void validateAccount() {
-        Set<ConstraintViolation<Account>> constraintViolations = validator.validate(account);
+    private void validateTransaction(Transaction transaction) {
+        Set<ConstraintViolation<Transaction>> constraintViolations = validator.validate(transaction);
         if (!constraintViolations.isEmpty()) {
             String violationsAsString = constraintViolations.stream()
                     .map(ConstraintViolation::getMessage)
