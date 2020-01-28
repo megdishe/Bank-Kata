@@ -2,6 +2,7 @@ package com.kata.bank.service;
 
 import com.kata.bank.domain.Account;
 import com.kata.bank.domain.History;
+import com.kata.bank.domain.OperationType;
 import com.kata.bank.domain.Transaction;
 import org.junit.After;
 import org.junit.Assert;
@@ -45,17 +46,17 @@ public class AccountServiceImplTest {
                 .thenReturn(new AtomicReference<>(BigDecimal.ZERO));
         Mockito.when(account.getHistory())
                 .thenReturn(new History());
-
         executor = Executors.newFixedThreadPool(10);
     }
 
     @After
     public void tearDown() throws Exception {
+        Mockito.reset(account);
         executor.shutdownNow();
     }
 
     @Test
-    public void makeDeposit() throws InterruptedException {
+    public void testMakeDeposit() throws InterruptedException {
         List<Callable<Transaction>> callableList = new ArrayList<>();
         IntStream.rangeClosed(100, 5000)
                 .filter(amount -> amount % 100 == 0)
@@ -83,4 +84,39 @@ public class AccountServiceImplTest {
             throw new IllegalStateException(e);
         }
     }
+
+    @Test
+    public void testMakeDepositAndMakeWithdrawal() throws InterruptedException {
+        List<Callable<Transaction>> callableList = new ArrayList<>();
+        IntStream.rangeClosed(100, 5000)
+                .filter(amount -> amount % 100 == 0)
+                .forEach(amount -> {
+                    Callable<Transaction> deposit = () -> accountService.makeDeposit(BigDecimal.valueOf(amount));
+                    callableList.add(deposit);
+                });
+        IntStream.rangeClosed(100, 1000)
+                .filter(amount -> amount % 100 == 0)
+                .forEach(amount -> {
+                    Callable<Transaction> deposit = () -> accountService.makeWithdrawal(BigDecimal.valueOf(amount));
+                    callableList.add(deposit);
+                });
+        List<Transaction> transactionList = executor.invokeAll(callableList).stream()
+                .map(future -> getTransaction(future))
+                .sorted(Comparator.comparing(Transaction::getDate))
+                .collect(Collectors.toList());
+        BigDecimal balance = transactionList.get(transactionList.size() - 1).getBalance();
+
+        BigDecimal sumOfAmounts = transactionList.stream()
+                .filter(transaction -> transaction.getOperationType() == OperationType.DEPOSIT)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        sumOfAmounts = transactionList.stream()
+                .filter(transaction -> transaction.getOperationType() == OperationType.WITHDRAWAL)
+                .map(Transaction::getAmount)
+                .reduce(sumOfAmounts, BigDecimal::subtract);
+
+        Assert.assertEquals(balance, sumOfAmounts);
+    }
+
 }
